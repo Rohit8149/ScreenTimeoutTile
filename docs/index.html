@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Timeout Tile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .icon { font-size: 64px; margin-bottom: 16px; }
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: #94a3b8; font-size: 15px; line-height: 1.5; margin-bottom: 32px; }
+        .download-btn {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .download-btn:hover { background: #2563eb; }
+        .download-btn:active { background: #1d4ed8; }
+        .size-info { color: #64748b; font-size: 13px; margin-top: 12px; }
+        .features {
+            margin-top: 32px;
+            text-align: left;
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .feature-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .feature-text { font-size: 14px; color: #cbd5e1; line-height: 1.4; }
+        .feature-text strong { color: #e2e8f0; }
+        .cycle {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #93c5fd;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 32px;
+            color: #475569;
+            font-size: 13px;
+        }
+        .footer a { color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">⏱️</div>
+        <h1>Screen Timeout Tile</h1>
+        <p class="subtitle">Temporarily extend your screen timeout in one tap — right from Quick Settings.</p>
+
+        <a href="ScreenTimeoutTile.apk" class="download-btn" download>
+            ⬇ Download APK
+        </a>
+        <p class="size-info">Android 8.0+ required</p>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <span class="feature-text"><strong>Quick Settings Tile</strong> — Control directly from your notification shade</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔄</span>
+                <span class="feature-text"><strong>Smart Cycle</strong> — Tap to cycle through temporary timeouts</span>
+            </div>
+            <div class="cycle">Your Timeout → 5 min → 10 min → 30 min → Your Timeout</div>
+            <div class="feature">
+                <span class="feature-icon">🔋</span>
+                <span class="feature-text"><strong>Zero Battery Drain</strong> — No background activity at all</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔔</span>
+                <span class="feature-text"><strong>Swipe to Cancel</strong> — Swipe the notification to instantly restore your timeout</span>
+            </div>
+        </div>
+    </div>
+    <p class="footer">Made with ❤️ by <a href="https://github.com/Rohit8149">Rohit</a> · <a href="https://github.com/Rohit8149/ScreenTimeoutTile">Source Code</a></p>
+</body>
+</html>

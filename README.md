@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Rohit8149/ScreenTimeoutTile/releases/latest/download/ScreenTimeoutTile.apk">
+  <a href="https://rohit8149.github.io/ScreenTimeoutTile/ScreenTimeoutTile.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
   </a>
 </p>
@@ -41,11 +41,11 @@ You're reading a long article, following a recipe, or showing someone your scree
 
 ## 📥 Download
 
-<a href="https://github.com/Rohit8149/ScreenTimeoutTile/releases/latest/download/ScreenTimeoutTile.apk">
+<a href="https://rohit8149.github.io/ScreenTimeoutTile/ScreenTimeoutTile.apk">
   <img src="https://img.shields.io/badge/⬇_Download_Latest_APK-0078D4?style=for-the-badge&logoColor=white" alt="Download APK" width="280"/>
 </a>
 
-> The APK is built automatically from the latest source code using GitHub Actions.
+> You can also visit the [download page](https://rohit8149.github.io/ScreenTimeoutTile/) on your phone for a smooth download experience.
 
 ---
 
