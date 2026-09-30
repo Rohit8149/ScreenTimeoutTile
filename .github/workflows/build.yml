@@ -42,10 +42,19 @@ jobs:
         git commit -m "Update APK [auto]" || echo "No changes to commit"
         git push
 
+    - name: Get App Version
+      id: get_version
+      run: |
+        VERSION_NAME=$(grep -o 'versionName = "[^"]*"' app/build.gradle.kts | cut -d'"' -f2)
+        echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+
     - name: Create Release
-      uses: softprops/action-gh-release@v2
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: build-${{ github.run_number }}
-        name: Update Build ${{ github.run_number }}
+        tag: v${{ steps.get_version.outputs.version_name }}
+        name: Version ${{ steps.get_version.outputs.version_name }}
         body: Automatically generated APK from the latest code.
-        files: ScreenTimeoutTile.apk
+        artifacts: ScreenTimeoutTile.apk
+        allowUpdates: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
