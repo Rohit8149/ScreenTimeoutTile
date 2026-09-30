@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://rohit8149.github.io/ScreenTimeoutTile/ScreenTimeoutTile.apk">
-    <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
+  <a href="https://rohit8149.github.io/ScreenTimeoutTile/">
+    <img src="https://img.shields.io/badge/Download-App-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download App"/>
   </a>
   &nbsp;
   <img src="https://img.shields.io/github/v/release/Rohit8149/ScreenTimeoutTile?style=for-the-badge&label=Latest&color=green" alt="Latest Release"/>
@@ -43,11 +43,13 @@ You're reading a long article, following a recipe, or showing someone your scree
 
 ## 📥 Download
 
-<a href="https://rohit8149.github.io/ScreenTimeoutTile/ScreenTimeoutTile.apk">
-  <img src="https://img.shields.io/badge/⬇_Download_Latest_APK-0078D4?style=for-the-badge&logoColor=white" alt="Download APK" width="280"/>
+Since this is a mobile app, the best way to get it is to visit the download page directly from your phone:
+
+<a href="https://rohit8149.github.io/ScreenTimeoutTile/">
+  <img src="https://img.shields.io/badge/⬇_Visit_Download_Page-0078D4?style=for-the-badge&logoColor=white" alt="Visit Download Page" width="280"/>
 </a>
 
-> You can also visit the [download page](https://rohit8149.github.io/ScreenTimeoutTile/) on your phone for a smooth download experience.
+> Clicking the button above will take you to our mobile-friendly website where you can safely download the app to your phone without any browser issues.
 
 ---
 
