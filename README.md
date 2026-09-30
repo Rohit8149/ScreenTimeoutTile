@@ -1,30 +1,103 @@
-# Screen Timeout Tile ⏱️
+<p align="center">
+  <img src="app/src/main/res/drawable/app_icon.jpg" width="120" alt="Screen Timeout Tile" style="border-radius: 24px"/>
+</p>
 
-A lightweight Android utility app that lets you temporarily extend your screen timeout directly from your Quick Settings panel.
+<h1 align="center">Screen Timeout Tile</h1>
 
-When you're reading a long article, referencing a recipe, or showing a screen to a friend, your phone turning off every 1 minute is frustrating. This app solves that by letting you temporarily boost the timeout to 5, 10, or 30 minutes. When you're done, it automatically restores your exact original timeout.
+<p align="center">
+  <em>Temporarily extend your screen timeout in one tap — right from Quick Settings.</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Rohit8149/ScreenTimeoutTile/releases/latest/download/ScreenTimeoutTile.apk">
+    <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
+  </a>
+  &nbsp;
+  <img src="https://img.shields.io/github/v/release/Rohit8149/ScreenTimeoutTile?style=for-the-badge&label=Latest&color=green" alt="Latest Release"/>
+  &nbsp;
+  <img src="https://img.shields.io/github/license/Rohit8149/ScreenTimeoutTile?style=for-the-badge" alt="License"/>
+</p>
+
+---
+
+## 🤔 The Problem
+
+You're reading a long article, following a recipe, or showing someone your screen — and your phone keeps turning off every minute. Going into **Settings → Display → Screen Timeout** every time is annoying.
+
+## 💡 The Solution
+
+**Screen Timeout Tile** adds a Quick Settings tile that lets you temporarily boost your screen timeout to **5, 10, or 30 minutes** with a single tap. When you're done, it restores your exact original timeout automatically.
+
+---
 
 ## ✨ Features
-* **Quick Settings Tile:** Toggle timeouts directly from your notification shade.
-* **Smart Cycle:** Tap the tile to cycle through: `Your Original Timeout` → `5 min` → `10 min` → `30 min` → `Your Original Timeout`.
-* **Zero Battery Drain:** The app does not run any background polling. It simply modifies the Android system setting and sleeps.
-* **Swipe to Cancel:** A temporary notification keeps you informed. Simply swipe it away to instantly restore your original timeout.
-* **No Ads, Open Source:** Completely free and private.
 
-## 🚀 How to Install
-Since this app modifies system settings, it is not on the Google Play Store. You can download the raw APK directly from GitHub:
-1. Go to the **Releases** section on the right side of this repository (or click [here](../../releases/latest)).
-2. Under **Assets**, click on `ScreenTimeoutTile.apk` to download the file directly to your phone.
-3. Install the APK on your Android device.
+| | Feature | Description |
+|---|---|---|
+| ⚡ | **Quick Settings Tile** | Toggle directly from your notification shade — no need to open the app |
+| 🔄 | **Smart Cycle** | Tap to cycle: `Original` → `5 min` → `10 min` → `30 min` → `Original` |
+| 🔋 | **Zero Battery Drain** | No background polling — just changes a system setting and sleeps |
+| 🔔 | **Smart Notification** | Shows active timeout. Swipe it away to instantly restore your original timeout |
+| 🔒 | **Remembers Your Settings** | Saves and restores your exact original timeout, even after reboot |
+| 🚫 | **No Ads, No Tracking** | Completely free, open source, and private |
+
+---
+
+## 📥 Download
+
+<a href="https://github.com/Rohit8149/ScreenTimeoutTile/releases/latest/download/ScreenTimeoutTile.apk">
+  <img src="https://img.shields.io/badge/⬇_Download_Latest_APK-0078D4?style=for-the-badge&logoColor=white" alt="Download APK" width="280"/>
+</a>
+
+> The APK is built automatically from the latest source code using GitHub Actions.
+
+---
 
 ## 📱 How to Use
-1. **Grant Permission:** Open the app once to grant the "Modify system settings" permission.
-2. **Add the Tile:** Swipe down your notification shade, tap the edit (pencil) icon, and drag the "Timeout" tile to your active tiles.
-3. **Tap to Cycle:** Tap the tile to extend your screen timeout. Tap again to increase the time.
-4. **Restore:** To go back to your normal timeout, either tap the tile until it turns off, or simply swipe away the ongoing notification.
+
+### Step 1 — Install & Grant Permission
+Open the app once after installing. It will ask you to allow **"Modify system settings"** — this is required so the app can change your screen timeout.
+
+### Step 2 — Add the Tile
+Swipe down from the top of your screen to open Quick Settings. Tap the **edit (✏️) icon**, find **"Screen Timeout"** and drag it into your active tiles.
+
+### Step 3 — Tap to Cycle
+Each tap on the tile cycles through temporary timeouts:
+
+```
+Your Timeout → 5 min → 10 min → 30 min → Your Timeout
+```
+
+### Step 4 — Restore
+To go back to your normal timeout:
+- **Tap the tile** until it cycles back, OR
+- **Swipe away the notification** — this instantly restores your original timeout
+
+That's it! You never need to open the app again. Everything works from the tile and notification.
+
+---
 
 ## 🛠️ Built With
-* Kotlin
-* Jetpack Compose (for the onboarding UI)
-* Android TileService API
-* Android Foreground Services (to ensure compatibility with Android 14+ notification rules)
+
+- **Kotlin** — Modern Android development language
+- **Jetpack Compose** — For the clean onboarding UI
+- **Android TileService API** — For the native Quick Settings integration
+- **Android Foreground Service** — For reliable notifications on Android 14+
+
+---
+
+## 🏗️ Building from Source
+
+```bash
+git clone https://github.com/Rohit8149/ScreenTimeoutTile.git
+cd ScreenTimeoutTile
+./gradlew assembleDebug
+```
+
+The APK will be at `app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/Rohit8149">Rohit</a>
+</p>
