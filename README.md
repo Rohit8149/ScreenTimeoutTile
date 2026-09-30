@@ -12,6 +12,8 @@
   <a href="https://rohit8149.github.io/ScreenTimeoutTile/ScreenTimeoutTile.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
   </a>
+  &nbsp;
+  <img src="https://img.shields.io/github/v/release/Rohit8149/ScreenTimeoutTile?style=for-the-badge&label=Latest&color=green" alt="Latest Release"/>
 </p>
 
 ---
