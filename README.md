@@ -12,11 +12,10 @@ When you're reading a long article, referencing a recipe, or showing a screen to
 * **No Ads, Open Source:** Completely free and private.
 
 ## 🚀 How to Install
-Since this app modifies system settings, it is not on the Google Play Store. You can download it directly from GitHub:
-1. Go to the [Actions tab](../../actions) in this repository.
-2. Click on the latest successful build.
-3. Scroll down to **Artifacts** and download the `ScreenTimeoutTile-App.zip` file.
-4. Unzip the file and install the `app-debug.apk` on your Android device.
+Since this app modifies system settings, it is not on the Google Play Store. You can download the raw APK directly from GitHub:
+1. Go to the **Releases** section on the right side of this repository (or click [here](../../releases/latest)).
+2. Under **Assets**, click on `ScreenTimeoutTile.apk` to download the file directly to your phone.
+3. Install the APK on your Android device.
 
 ## 📱 How to Use
 1. **Grant Permission:** Open the app once to grant the "Modify system settings" permission.
