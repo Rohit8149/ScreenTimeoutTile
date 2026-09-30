@@ -22,7 +22,7 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = true
+                enable = false
             }
             // Use debug signing key so the APK can be installed without a keystore
             signingConfig = signingConfigs.getByName("debug")

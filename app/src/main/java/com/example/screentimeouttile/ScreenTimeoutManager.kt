@@ -102,6 +102,15 @@ class ScreenTimeoutManager(private val context: Context) {
     private fun setSystemTimeout(timeoutMs: Int) {
         try {
             Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+            
+            // Add visual confirmation
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                android.widget.Toast.makeText(
+                    context, 
+                    "Screen timeout set to ${timeoutMs / 60000}m", 
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
