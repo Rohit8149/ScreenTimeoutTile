@@ -109,10 +109,26 @@ class ScreenTimeoutManager(private val context: Context) {
         DebugLogger.log("setSystemTimeout -> attempting to write: $timeoutMs")
         try {
             val uri = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT)
-            val success = Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
-            
-            // Force broadcast to wake up PowerManagerService on custom ROMs
-            context.contentResolver.notifyChange(uri, null)
+            var finalReadBack = -1
+            var writeSuccess = false
+
+            for (attempt in 1..5) {
+                Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+                context.contentResolver.notifyChange(uri, null)
+                
+                // Wait 100ms to see if the custom ROM's battery monitor maliciously overwrites it
+                Thread.sleep(100) 
+                
+                finalReadBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
+                
+                if (finalReadBack == timeoutMs) {
+                    writeSuccess = true
+                    DebugLogger.log("Write stuck successfully on attempt $attempt")
+                    break
+                } else {
+                    DebugLogger.log("Attempt $attempt failed: OS maliciously overwrote to $finalReadBack! Fighting back...")
+                }
+            }
 
             // Force PowerManager to recalculate display timeouts using a micro-wakelock
             try {
@@ -125,16 +141,9 @@ class ScreenTimeoutManager(private val context: Context) {
                 DebugLogger.log("Wakelock trick failed: ${e.message}")
             }
 
-            val readBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
-            
-            val statusMsg = if (!success) {
-                DebugLogger.log("CRITICAL: putInt returned false (blocked by OS)")
-                "Failed: OS blocked write."
-            } else if (readBack != timeoutMs) {
-                DebugLogger.log("CRITICAL: OS instantly overwrote to $readBack")
-                "Failed: OS overwrote it instantly (Read $readBack)."
+            val statusMsg = if (!writeSuccess) {
+                "Failed: OS aggressively blocked write."
             } else {
-                DebugLogger.log("SUCCESS: Readback matches $timeoutMs")
                 "Screen timeout set to ${timeoutMs / 60000}m"
             }
 
