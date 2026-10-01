@@ -43,32 +43,17 @@ class ScreenTimeoutTileService : TileService() {
             return
         }
 
-        if (manager.isTemporaryModeActive()) {
-            val next = manager.getNextTemporaryTimeout()
-            if (next != null) {
-                // Move to next temporary timeout (10m or 30m)
-                manager.setTemporaryTimeout(next)
-                notificationHelper.showOngoingNotification()
-            } else {
-                // Cycle complete, restore original
-                manager.restoreOriginalTimeout()
-                notificationHelper.cancelNotification()
-            }
+        val intent = Intent(this, TrampolineActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val pendingIntent = android.app.PendingIntent.getActivity(this, 0, intent, android.app.PendingIntent.FLAG_IMMUTABLE)
+            startActivityAndCollapse(pendingIntent)
         } else {
-            // First activation: save original and set 5m
-            manager.enableTemporaryMode()
-            notificationHelper.showOngoingNotification()
+            @Suppress("DEPRECATION")
+            startActivityAndCollapse(intent)
         }
-        
-        // Silently check for updates in the background when the tile is used
-        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val update = AppUpdater.checkForUpdate()
-            if (update != null) {
-                AppUpdater.showUpdateNotification(this@ScreenTimeoutTileService, update)
-            }
-        }
-        
-        updateTileState()
     }
 
     private fun updateTileState() {
