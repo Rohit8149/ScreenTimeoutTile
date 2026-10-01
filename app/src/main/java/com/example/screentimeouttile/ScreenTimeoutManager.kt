@@ -108,7 +108,23 @@ class ScreenTimeoutManager(private val context: Context) {
     private fun setSystemTimeout(timeoutMs: Int) {
         DebugLogger.log("setSystemTimeout -> attempting to write: $timeoutMs")
         try {
+            val uri = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT)
             val success = Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+            
+            // Force broadcast to wake up PowerManagerService on custom ROMs
+            context.contentResolver.notifyChange(uri, null)
+
+            // Force PowerManager to recalculate display timeouts using a micro-wakelock
+            try {
+                val pm = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                @Suppress("DEPRECATION")
+                val wl = pm.newWakeLock(android.os.PowerManager.SCREEN_DIM_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "ScreenTimeoutTile::RefreshWakelock")
+                wl.acquire(100) // 100 milliseconds is enough to trigger a PowerManager refresh
+                DebugLogger.log("Wakelock refresh triggered")
+            } catch (e: Exception) {
+                DebugLogger.log("Wakelock trick failed: ${e.message}")
+            }
+
             val readBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
             
             val statusMsg = if (!success) {
