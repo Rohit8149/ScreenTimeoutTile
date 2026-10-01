@@ -158,6 +158,12 @@ fun ScreenTimeoutScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Battery Optimization Card (Crucial for preventing the "stops working next day" bug)
+        val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+        ) {
+            isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        }
+
         if (!isIgnoringBattery) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -188,7 +194,7 @@ fun ScreenTimeoutScreen(
                             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                                 data = Uri.parse("package:${context.packageName}")
                             }
-                            context.startActivity(intent)
+                            batteryLauncher.launch(intent)
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
