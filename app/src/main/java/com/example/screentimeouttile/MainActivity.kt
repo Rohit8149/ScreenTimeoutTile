@@ -109,11 +109,16 @@ fun ScreenTimeoutScreen(
 ) {
     var hasPermission by remember { mutableStateOf(manager.hasWriteSettingsPermission()) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val powerManager = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+    var isIgnoringBattery by remember { mutableStateOf(powerManager.isIgnoringBatteryOptimizations(context.packageName)) }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 hasPermission = manager.hasWriteSettingsPermission()
+                isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(context.packageName)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -151,6 +156,50 @@ fun ScreenTimeoutScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Battery Optimization Card (Crucial for preventing the "stops working next day" bug)
+        if (!isIgnoringBattery) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Battery Optimization Detected",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Android puts this app to sleep overnight because you only use it from the notification panel. This causes the tile to stop working the next day.\n\nPlease allow the app to run in the background to fix this permanently.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(intent)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Disable Optimization")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         // Permission card
         if (!hasPermission) {
