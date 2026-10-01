@@ -28,10 +28,8 @@ class ScreenTimeoutTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        DebugLogger.log("--- TILE CLICKED ---")
 
         if (!manager.hasWriteSettingsPermission()) {
-            DebugLogger.log("Tile clicked, but NO PERMISSION.")
             val intent = Intent(this, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }

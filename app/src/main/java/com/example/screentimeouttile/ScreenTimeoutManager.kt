@@ -7,10 +7,6 @@ import android.provider.Settings
 class ScreenTimeoutManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("screen_timeout_prefs", Context.MODE_PRIVATE)
 
-    init {
-        DebugLogger.init(context)
-    }
-
     companion object {
         private const val KEY_IS_TEMPORARY_MODE = "is_temporary_mode"
         private const val KEY_ORIGINAL_TIMEOUT = "original_timeout"
@@ -24,9 +20,7 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     fun hasWriteSettingsPermission(): Boolean {
-        val hasPerm = Settings.System.canWrite(context)
-        DebugLogger.log("Permission check: $hasPerm")
-        return hasPerm
+        return Settings.System.canWrite(context)
     }
 
     fun isTemporaryModeActive(): Boolean {
@@ -43,21 +37,14 @@ class ScreenTimeoutManager(private val context: Context) {
 
     fun getCurrentSystemTimeout(): Int {
         return try {
-            val system = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
-            DebugLogger.log("Read System Timeout: $system")
-            system
+            Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
         } catch (e: Settings.SettingNotFoundException) {
-            DebugLogger.log("System Timeout NOT FOUND, default 60k")
             60000
         }
     }
 
     fun enableTemporaryMode(temporaryMs: Int = TEMPORARY_TIMEOUTS_MS[0]) {
-        DebugLogger.log("enableTemporaryMode called: $temporaryMs")
-        if (!hasWriteSettingsPermission()) {
-            DebugLogger.log("Missing permission, aborting.")
-            return
-        }
+        if (!hasWriteSettingsPermission()) return
 
         val currentTimeout = getCurrentSystemTimeout()
 
@@ -67,12 +54,10 @@ class ScreenTimeoutManager(private val context: Context) {
             .putInt(KEY_CURRENT_TEMPORARY_TIMEOUT, temporaryMs)
             .apply()
 
-        DebugLogger.log("Saved original: $currentTimeout, enabling temp: $temporaryMs")
         setSystemTimeout(temporaryMs)
     }
 
     fun setTemporaryTimeout(temporaryMs: Int) {
-        DebugLogger.log("setTemporaryTimeout: $temporaryMs")
         if (!hasWriteSettingsPermission()) return
 
         prefs.edit()
@@ -93,11 +78,9 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     fun restoreOriginalTimeout() {
-        DebugLogger.log("restoreOriginalTimeout called")
         if (!hasWriteSettingsPermission()) return
 
         val original = getOriginalTimeout()
-        DebugLogger.log("Restoring original: $original")
         setSystemTimeout(original)
 
         prefs.edit()
@@ -106,7 +89,6 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     private fun setSystemTimeout(timeoutMs: Int) {
-        DebugLogger.log("setSystemTimeout -> attempting to write: $timeoutMs")
         try {
             val uri = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT)
             var finalReadBack = -1
@@ -123,10 +105,7 @@ class ScreenTimeoutManager(private val context: Context) {
                 
                 if (finalReadBack == timeoutMs) {
                     writeSuccess = true
-                    DebugLogger.log("Write stuck successfully on attempt $attempt")
                     break
-                } else {
-                    DebugLogger.log("Attempt $attempt failed: OS maliciously overwrote to $finalReadBack! Fighting back...")
                 }
             }
 
@@ -136,13 +115,12 @@ class ScreenTimeoutManager(private val context: Context) {
                 @Suppress("DEPRECATION")
                 val wl = pm.newWakeLock(android.os.PowerManager.SCREEN_DIM_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "ScreenTimeoutTile::RefreshWakelock")
                 wl.acquire(100) // 100 milliseconds is enough to trigger a PowerManager refresh
-                DebugLogger.log("Wakelock refresh triggered")
             } catch (e: Exception) {
-                DebugLogger.log("Wakelock trick failed: ${e.message}")
+                // Ignore wakelock errors silently for user
             }
 
             val statusMsg = if (!writeSuccess) {
-                "Failed: OS aggressively blocked write."
+                "Failed to change timeout (OS blocked)"
             } else {
                 "Screen timeout set to ${timeoutMs / 60000}m"
             }
@@ -155,7 +133,6 @@ class ScreenTimeoutManager(private val context: Context) {
                 ).show()
             }
         } catch (e: Exception) {
-            DebugLogger.log("EXCEPTION in setSystemTimeout: ${e.message}")
             e.printStackTrace()
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 android.widget.Toast.makeText(
