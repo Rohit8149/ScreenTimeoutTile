@@ -98,7 +98,7 @@ class ScreenTimeoutManager(private val context: Context) {
                 Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
                 context.contentResolver.notifyChange(uri, null)
                 
-                // Wait 100ms to see if the custom ROM's battery monitor maliciously overwrites it
+                // Wait 100ms for OS to potentially overwrite
                 Thread.sleep(100) 
                 
                 finalReadBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
@@ -106,6 +106,10 @@ class ScreenTimeoutManager(private val context: Context) {
                 if (finalReadBack == timeoutMs) {
                     writeSuccess = true
                     break
+                } else {
+                    // Simulate the slight delay the DebugLogger used to take in v1.1.8 
+                    // which might have been preventing a race condition.
+                    Thread.sleep(50) 
                 }
             }
 
@@ -116,7 +120,7 @@ class ScreenTimeoutManager(private val context: Context) {
                 val wl = pm.newWakeLock(android.os.PowerManager.SCREEN_DIM_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "ScreenTimeoutTile::RefreshWakelock")
                 wl.acquire(100) // 100 milliseconds is enough to trigger a PowerManager refresh
             } catch (e: Exception) {
-                // Ignore wakelock errors silently for user
+                // Ignore Wakelock errors silently
             }
 
             val statusMsg = if (!writeSuccess) {
