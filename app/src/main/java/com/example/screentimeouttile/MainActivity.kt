@@ -50,11 +50,45 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ScreenTimeoutTileTheme {
+                var updateInfo by remember { mutableStateOf<AppUpdater.UpdateInfo?>(null) }
+                
+                LaunchedEffect(Unit) {
+                    updateInfo = AppUpdater.checkForUpdate()
+                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     ScreenTimeoutScreen(manager, ::requestWriteSettings)
+
+                    updateInfo?.let { info ->
+                        AlertDialog(
+                            onDismissRequest = { updateInfo = null },
+                            title = { Text("Update Available") },
+                            text = { 
+                                Column {
+                                    Text("Version ${info.version} is available!")
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text("Release Notes:", fontWeight = FontWeight.Bold)
+                                    Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall)
+                                }
+                            },
+                            confirmButton = {
+                                Button(onClick = {
+                                    AppUpdater.downloadAndInstallUpdate(this@MainActivity, info.downloadUrl)
+                                    updateInfo = null
+                                }) {
+                                    Text("Update Now")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { updateInfo = null }) {
+                                    Text("Later")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

@@ -58,6 +58,14 @@ class ScreenTimeoutTileService : TileService() {
             notificationHelper.showOngoingNotification()
         }
         
+        // Silently check for updates in the background when the tile is used
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val update = AppUpdater.checkForUpdate()
+            if (update != null) {
+                AppUpdater.showUpdateNotification(this@ScreenTimeoutTileService, update)
+            }
+        }
+        
         updateTileState()
     }
 
