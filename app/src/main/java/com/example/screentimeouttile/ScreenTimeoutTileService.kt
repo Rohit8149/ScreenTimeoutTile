@@ -20,6 +20,7 @@ class ScreenTimeoutTileService : TileService() {
 
     override fun onStartListening() {
         super.onStartListening()
+        manager.syncState()
         updateTileState()
     }
 
