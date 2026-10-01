@@ -101,14 +101,22 @@ class ScreenTimeoutManager(private val context: Context) {
 
     private fun setSystemTimeout(timeoutMs: Int) {
         try {
-            Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+            val success = Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+            val readBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
             
-            // Add visual confirmation
+            val statusMsg = if (!success) {
+                "Failed: OS blocked write."
+            } else if (readBack != timeoutMs) {
+                "Failed: OS overwrote it instantly (Read $readBack)."
+            } else {
+                "Screen timeout set to ${timeoutMs / 60000}m"
+            }
+
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 android.widget.Toast.makeText(
-                    context, 
-                    "Screen timeout set to ${timeoutMs / 60000}m", 
-                    android.widget.Toast.LENGTH_SHORT
+                    context,
+                    statusMsg,
+                    android.widget.Toast.LENGTH_LONG
                 ).show()
             }
         } catch (e: Exception) {
