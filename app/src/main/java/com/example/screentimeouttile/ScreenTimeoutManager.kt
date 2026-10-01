@@ -113,6 +113,13 @@ class ScreenTimeoutManager(private val context: Context) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                android.widget.Toast.makeText(
+                    context, 
+                    "Error setting timeout: ${e.message}", 
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 }
