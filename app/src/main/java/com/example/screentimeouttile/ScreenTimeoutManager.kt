@@ -115,16 +115,4 @@ class ScreenTimeoutManager(private val context: Context) {
             e.printStackTrace()
         }
     }
-
-    fun syncState() {
-        if (isTemporaryModeActive()) {
-            val system = getCurrentSystemTimeout()
-            val expected = getCurrentTemporaryTimeout()
-            // If the user manually changed their screen timeout in Android settings while the tile was active,
-            // or if the OS broke the state, the tile gets "stuck". This un-sticks it.
-            if (system != expected) {
-                prefs.edit().putBoolean(KEY_IS_TEMPORARY_MODE, false).apply()
-            }
-        }
-    }
 }
