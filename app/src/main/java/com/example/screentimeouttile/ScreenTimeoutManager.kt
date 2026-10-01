@@ -7,6 +7,10 @@ import android.provider.Settings
 class ScreenTimeoutManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("screen_timeout_prefs", Context.MODE_PRIVATE)
 
+    init {
+        DebugLogger.init(context)
+    }
+
     companion object {
         private const val KEY_IS_TEMPORARY_MODE = "is_temporary_mode"
         private const val KEY_ORIGINAL_TIMEOUT = "original_timeout"
@@ -20,7 +24,9 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     fun hasWriteSettingsPermission(): Boolean {
-        return Settings.System.canWrite(context)
+        val hasPerm = Settings.System.canWrite(context)
+        DebugLogger.log("Permission check: $hasPerm")
+        return hasPerm
     }
 
     fun isTemporaryModeActive(): Boolean {
@@ -37,18 +43,21 @@ class ScreenTimeoutManager(private val context: Context) {
 
     fun getCurrentSystemTimeout(): Int {
         return try {
-            Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
+            val system = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
+            DebugLogger.log("Read System Timeout: $system")
+            system
         } catch (e: Settings.SettingNotFoundException) {
+            DebugLogger.log("System Timeout NOT FOUND, default 60k")
             60000
         }
     }
 
-    /**
-     * Activates temporary mode for the first time.
-     * Saves the current system timeout as original, then sets the given temporary timeout.
-     */
     fun enableTemporaryMode(temporaryMs: Int = TEMPORARY_TIMEOUTS_MS[0]) {
-        if (!hasWriteSettingsPermission()) return
+        DebugLogger.log("enableTemporaryMode called: $temporaryMs")
+        if (!hasWriteSettingsPermission()) {
+            DebugLogger.log("Missing permission, aborting.")
+            return
+        }
 
         val currentTimeout = getCurrentSystemTimeout()
 
@@ -58,13 +67,12 @@ class ScreenTimeoutManager(private val context: Context) {
             .putInt(KEY_CURRENT_TEMPORARY_TIMEOUT, temporaryMs)
             .apply()
 
+        DebugLogger.log("Saved original: $currentTimeout, enabling temp: $temporaryMs")
         setSystemTimeout(temporaryMs)
     }
 
-    /**
-     * Switches to a different temporary timeout without overwriting the original.
-     */
     fun setTemporaryTimeout(temporaryMs: Int) {
+        DebugLogger.log("setTemporaryTimeout: $temporaryMs")
         if (!hasWriteSettingsPermission()) return
 
         prefs.edit()
@@ -74,10 +82,6 @@ class ScreenTimeoutManager(private val context: Context) {
         setSystemTimeout(temporaryMs)
     }
 
-    /**
-     * Returns the next temporary timeout in the cycle, or null if we should restore original.
-     * Cycle: 5m → 10m → 30m → null (restore)
-     */
     fun getNextTemporaryTimeout(): Int? {
         val current = getCurrentTemporaryTimeout()
         val idx = TEMPORARY_TIMEOUTS_MS.indexOf(current)
@@ -89,9 +93,11 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     fun restoreOriginalTimeout() {
+        DebugLogger.log("restoreOriginalTimeout called")
         if (!hasWriteSettingsPermission()) return
 
         val original = getOriginalTimeout()
+        DebugLogger.log("Restoring original: $original")
         setSystemTimeout(original)
 
         prefs.edit()
@@ -100,15 +106,19 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     private fun setSystemTimeout(timeoutMs: Int) {
+        DebugLogger.log("setSystemTimeout -> attempting to write: $timeoutMs")
         try {
             val success = Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
             val readBack = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
             
             val statusMsg = if (!success) {
+                DebugLogger.log("CRITICAL: putInt returned false (blocked by OS)")
                 "Failed: OS blocked write."
             } else if (readBack != timeoutMs) {
+                DebugLogger.log("CRITICAL: OS instantly overwrote to $readBack")
                 "Failed: OS overwrote it instantly (Read $readBack)."
             } else {
+                DebugLogger.log("SUCCESS: Readback matches $timeoutMs")
                 "Screen timeout set to ${timeoutMs / 60000}m"
             }
 
@@ -120,6 +130,7 @@ class ScreenTimeoutManager(private val context: Context) {
                 ).show()
             }
         } catch (e: Exception) {
+            DebugLogger.log("EXCEPTION in setSystemTimeout: ${e.message}")
             e.printStackTrace()
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 android.widget.Toast.makeText(
