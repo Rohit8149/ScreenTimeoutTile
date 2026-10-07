@@ -26,24 +26,14 @@ import com.example.screentimeouttile.ui.theme.ScreenTimeoutTileTheme
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var manager: ScreenTimeoutManager
-
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        // Will refresh state on resume
-    }
-
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
-        // Will refresh state on resume
-    }
+    ) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        manager = ScreenTimeoutManager(this)
-
+        DebugLogger.init(this)
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -60,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScreenTimeoutScreen(manager, ::requestWriteSettings)
+                    ScreenTimeoutScreen()
 
                     updateInfo?.let { info ->
                         AlertDialog(
@@ -93,22 +83,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    private fun requestWriteSettings() {
-        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-            data = Uri.parse("package:$packageName")
-        }
-        permissionLauncher.launch(intent)
-    }
 }
 
 @Composable
-fun ScreenTimeoutScreen(
-    manager: ScreenTimeoutManager,
-    onRequestPermission: () -> Unit
-) {
-    var hasPermission by remember { mutableStateOf(manager.hasWriteSettingsPermission()) }
-
+fun ScreenTimeoutScreen() {
     val context = androidx.compose.ui.platform.LocalContext.current
     val powerManager = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
     var isIgnoringBattery by remember { mutableStateOf(powerManager.isIgnoringBatteryOptimizations(context.packageName)) }
@@ -117,7 +95,6 @@ fun ScreenTimeoutScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                hasPermission = manager.hasWriteSettingsPermission()
                 isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(context.packageName)
             }
         }
@@ -138,18 +115,18 @@ fun ScreenTimeoutScreen(
 
         // App title
         Text(
-            text = "⏱",
+            text = "☕",
             fontSize = 48.sp
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Screen Timeout Tile",
+            text = "Screen Keeper",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Quickly change your screen timeout\nfrom the Quick Settings panel.",
+            text = "Keep your screen awake securely\nfrom the Quick Settings panel.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -157,7 +134,7 @@ fun ScreenTimeoutScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Battery Optimization Card (Crucial for preventing the "stops working next day" bug)
+        // Battery Optimization Card
         val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
             androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
         ) {
@@ -183,7 +160,7 @@ fun ScreenTimeoutScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Android puts this app to sleep overnight because you only use it from the notification panel. This causes the tile to stop working the next day.\n\nPlease allow the app to run in the background to fix this permanently.",
+                        text = "To ensure the Screen Keeper timer doesn't get randomly killed by the OS when you are reading something long, please allow background activity.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onErrorContainer
@@ -207,67 +184,6 @@ fun ScreenTimeoutScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Permission card
-        if (!hasPermission) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Permission Required",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "This app needs permission to modify system settings to change your screen timeout.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = onRequestPermission,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("Allow Permission")
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        } else {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("✅", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Permission granted. You're all set!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
         // How to use section
         Text(
             text = "How to Use",
@@ -282,7 +198,7 @@ fun ScreenTimeoutScreen(
         StepCard(
             number = "1",
             title = "Add the Tile",
-            description = "Swipe down from the top of your screen to open Quick Settings. Tap the edit (pencil) icon, find \"Screen Timeout\" and drag it into your active tiles."
+            description = "Swipe down from the top of your screen to open Quick Settings. Tap the edit (pencil) icon, find \"Screen Keeper\" and drag it into your active tiles."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -291,7 +207,7 @@ fun ScreenTimeoutScreen(
         StepCard(
             number = "2",
             title = "Tap to Cycle",
-            description = "Each tap on the tile cycles through temporary timeouts:\n\nYour timeout → 5 min → 10 min → 30 min → Your timeout\n\nYour original timeout is saved automatically and restored at the end."
+            description = "Each tap on the tile cycles through temporary timeouts:\n\nOff → 5 min → 10 min → 30 min → Off\n\nThe app uses a Wakelock to physically prevent the screen from turning off."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -299,8 +215,8 @@ fun ScreenTimeoutScreen(
         // Step 3
         StepCard(
             number = "3",
-            title = "Notification",
-            description = "A notification appears while a temporary timeout is active, showing the current timeout. Swipe it away to instantly restore your original timeout."
+            title = "Zero Battery Drain",
+            description = "The exact millisecond you manually press your phone's Power Button to lock the screen, the Screen Keeper shuts down instantly to save 100% of your battery."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -308,8 +224,8 @@ fun ScreenTimeoutScreen(
         // Step 4
         StepCard(
             number = "4",
-            title = "That's it!",
-            description = "No need to open this app again. Everything works from the Quick Settings tile and the notification. This app uses zero battery in the background."
+            title = "Notification",
+            description = "A notification appears while the Screen Keeper is running. You can tap the notification anytime to cancel it early."
         )
 
         Spacer(modifier = Modifier.height(32.dp))
