@@ -33,6 +33,7 @@ class ScreenTimeoutService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        DebugLogger.init(applicationContext)
         createNotificationChannel()
         val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
         registerReceiver(screenOffReceiver, filter)

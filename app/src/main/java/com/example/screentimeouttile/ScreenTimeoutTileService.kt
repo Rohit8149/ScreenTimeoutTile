@@ -11,6 +11,7 @@ class ScreenTimeoutTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
+        DebugLogger.init(applicationContext)
         DebugLogger.log("=== TILE CLICKED ===")
 
         val prefs = getSharedPreferences("screen_timeout_prefs", Context.MODE_PRIVATE)
@@ -30,19 +31,31 @@ class ScreenTimeoutTileService : TileService() {
 
         if (nextMs == 0L) {
             // Stop the Screen Keeper
+            prefs.edit().putBoolean("is_caffeine_active", false).apply()
             val intent = Intent(this, ScreenTimeoutService::class.java).apply { 
                 action = ScreenTimeoutService.ACTION_STOP 
             }
             startService(intent)
         } else {
-            // Launch Trampoline to safely start Foreground Service
-            val trampolineIntent = Intent(this, TrampolineActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Launch Foreground Service directly
+            prefs.edit().putBoolean("is_caffeine_active", true).putLong("current_caffeine_ms", nextMs).apply()
+            val intent = Intent(this, ScreenTimeoutService::class.java).apply {
                 putExtra(ScreenTimeoutService.EXTRA_TIMEOUT_MS, nextMs)
             }
-            @Suppress("DEPRECATION")
-            startActivityAndCollapse(trampolineIntent)
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+                DebugLogger.log("TileService successfully requested Foreground Service start.")
+            } catch (e: Exception) {
+                DebugLogger.log("CRITICAL ERROR starting service: ${e.message}")
+            }
         }
+        
+        // Optimistic UI update
+        updateTileUI()
     }
 
     override fun onStartListening() {
