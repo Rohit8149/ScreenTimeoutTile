@@ -33,8 +33,23 @@ class ScreenTimeoutService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        createNotificationChannel()
         val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
         registerReceiver(screenOffReceiver, filter)
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                "timeout_channel",
+                "Screen Keeper",
+                android.app.NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Ongoing notification for Screen Keeper"
+            }
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            manager.createNotificationChannel(channel)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
