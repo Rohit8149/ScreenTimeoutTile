@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.screentimeouttile"
         minSdk = 26
         targetSdk = 37
-        versionCode = 18
-        versionName = "1.3.3"
+        versionCode = 19
+        versionName = "1.3.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

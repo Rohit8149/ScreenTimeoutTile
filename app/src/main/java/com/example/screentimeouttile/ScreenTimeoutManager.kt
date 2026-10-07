@@ -3,6 +3,8 @@ package com.example.screentimeouttile
 import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class ScreenTimeoutManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("screen_timeout_prefs", Context.MODE_PRIVATE)
