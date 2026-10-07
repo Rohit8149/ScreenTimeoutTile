@@ -141,6 +141,26 @@ class ScreenTimeoutManager(private val context: Context) {
                 ).show()
             }
 
+            // DIAGNOSTIC: Dump proprietary keys to find if ColorOS uses a shadow DB
+            try {
+                val cursor = context.contentResolver.query(Settings.System.CONTENT_URI, null, null, null, null)
+                cursor?.use {
+                    val nameIndex = it.getColumnIndex("name")
+                    val valueIndex = it.getColumnIndex("value")
+                    while (it.moveToNext()) {
+                        if (nameIndex != -1 && valueIndex != -1) {
+                            val name = it.getString(nameIndex)
+                            if (name.contains("timeout", ignoreCase = true) || name.contains("screen", ignoreCase = true)) {
+                                val value = it.getString(valueIndex)
+                                DebugLogger.log("DB Dump -> $name: $value")
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                DebugLogger.log("Failed to dump DB: ${e.message}")
+            }
+
             // DIAGNOSTIC: Check if OS reverts it slowly after a few seconds
             kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
                 kotlinx.coroutines.delay(5000)

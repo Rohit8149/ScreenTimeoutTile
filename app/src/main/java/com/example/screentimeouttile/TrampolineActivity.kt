@@ -47,13 +47,24 @@ class TrampolineActivity : Activity() {
             }
         }
 
+        // Make the Ghost Screen completely pass-through so it doesn't block the user's touches
+        window.setFlags(
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or 
+            android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or 
+            android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+
         ScreenTimeoutTileService.requestTileUpdate(this)
         
-        // Delay finish so the OS Battery Monitor has time to register the app in the Foreground bucket
+        // Delay finish by 6 seconds (longer than the 5s diagnostic) to see if ColorOS 
+        // respects the timeout when the app physically remains in the Foreground state.
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             finish()
             @Suppress("DEPRECATION")
             overridePendingTransition(0, 0)
-        }, 250)
+        }, 6000)
     }
 }
