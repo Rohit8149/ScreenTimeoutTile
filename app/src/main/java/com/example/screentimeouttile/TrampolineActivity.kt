@@ -12,6 +12,11 @@ class TrampolineActivity : Activity() {
         super.onCreate(savedInstanceState)
         DebugLogger.init(this)
         DebugLogger.log("+++ TrampolineActivity CREATED +++")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        DebugLogger.log("+++ TrampolineActivity RESUMED (Foreground State Active) +++")
         
         val manager = ScreenTimeoutManager(this)
         val notificationHelper = NotificationHelper(this)
@@ -44,8 +49,11 @@ class TrampolineActivity : Activity() {
 
         ScreenTimeoutTileService.requestTileUpdate(this)
         
-        finish()
-        @Suppress("DEPRECATION")
-        overridePendingTransition(0, 0)
+        // Delay finish so the OS Battery Monitor has time to register the app in the Foreground bucket
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            finish()
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }, 250)
     }
 }
