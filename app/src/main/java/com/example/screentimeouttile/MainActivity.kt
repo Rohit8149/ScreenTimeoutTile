@@ -313,6 +313,54 @@ fun ScreenTimeoutScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Debug Logs Section
+        val logs by DebugLogger.logs.collectAsState()
+        val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Debug Logs",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Surface(
+                    color = androidx.compose.ui.graphics.Color.Black,
+                    contentColor = androidx.compose.ui.graphics.Color.Green,
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                ) {
+                    val logText = if (logs.isEmpty()) "No logs yet." else logs.joinToString("\n")
+                    Text(
+                        text = logText,
+                        modifier = Modifier.padding(8.dp).verticalScroll(rememberScrollState()),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        lineHeight = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(onClick = {
+                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(logs.joinToString("\n")))
+                        android.widget.Toast.makeText(context, "Logs copied!", android.widget.Toast.LENGTH_SHORT).show()
+                    }) { Text("Copy Logs") }
+
+                    OutlinedButton(onClick = { DebugLogger.clearLogs() }) { Text("Clear") }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

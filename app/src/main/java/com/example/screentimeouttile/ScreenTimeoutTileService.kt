@@ -28,8 +28,11 @@ class ScreenTimeoutTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
+        DebugLogger.init(this)
+        DebugLogger.log("=== TILE CLICKED ===")
 
         if (!manager.hasWriteSettingsPermission()) {
+            DebugLogger.log("No permission, launching MainActivity")
             val intent = Intent(this, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -43,16 +46,22 @@ class ScreenTimeoutTileService : TileService() {
             return
         }
 
+        DebugLogger.log("Permission OK. Attempting to launch TrampolineActivity...")
         val intent = Intent(this, TrampolineActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
         }
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val pendingIntent = android.app.PendingIntent.getActivity(this, 0, intent, android.app.PendingIntent.FLAG_IMMUTABLE)
-            startActivityAndCollapse(pendingIntent)
-        } else {
-            @Suppress("DEPRECATION")
-            startActivityAndCollapse(intent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                val pendingIntent = android.app.PendingIntent.getActivity(this, 0, intent, android.app.PendingIntent.FLAG_IMMUTABLE)
+                startActivityAndCollapse(pendingIntent)
+            } else {
+                @Suppress("DEPRECATION")
+                startActivityAndCollapse(intent)
+            }
+            DebugLogger.log("startActivityAndCollapse executed.")
+        } catch (e: Exception) {
+            DebugLogger.log("ERROR launching Trampoline: ${e.message}")
         }
     }
 

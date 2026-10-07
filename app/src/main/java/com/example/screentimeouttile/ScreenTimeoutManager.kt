@@ -89,6 +89,7 @@ class ScreenTimeoutManager(private val context: Context) {
     }
 
     private fun setSystemTimeout(timeoutMs: Int) {
+        DebugLogger.log("setSystemTimeout -> attempting to write: $timeoutMs")
         try {
             val uri = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT)
             var finalReadBack = -1
@@ -105,10 +106,10 @@ class ScreenTimeoutManager(private val context: Context) {
                 
                 if (finalReadBack == timeoutMs) {
                     writeSuccess = true
+                    DebugLogger.log("Write stuck successfully on attempt $attempt")
                     break
                 } else {
-                    // Simulate the slight delay the DebugLogger used to take in v1.1.8 
-                    // which might have been preventing a race condition.
+                    DebugLogger.log("Attempt $attempt failed: OS maliciously overwrote to $finalReadBack! Fighting back...")
                     Thread.sleep(50) 
                 }
             }
@@ -119,8 +120,9 @@ class ScreenTimeoutManager(private val context: Context) {
                 @Suppress("DEPRECATION")
                 val wl = pm.newWakeLock(android.os.PowerManager.SCREEN_DIM_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "ScreenTimeoutTile::RefreshWakelock")
                 wl.acquire(100) // 100 milliseconds is enough to trigger a PowerManager refresh
+                DebugLogger.log("Wakelock refresh triggered")
             } catch (e: Exception) {
-                // Ignore Wakelock errors silently
+                DebugLogger.log("Wakelock trick failed: ${e.message}")
             }
 
             val statusMsg = if (!writeSuccess) {
@@ -137,6 +139,7 @@ class ScreenTimeoutManager(private val context: Context) {
                 ).show()
             }
         } catch (e: Exception) {
+            DebugLogger.log("EXCEPTION in setSystemTimeout: ${e.message}")
             e.printStackTrace()
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 android.widget.Toast.makeText(

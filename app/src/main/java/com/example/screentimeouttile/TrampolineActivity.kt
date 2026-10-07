@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 class TrampolineActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DebugLogger.init(this)
+        DebugLogger.log("+++ TrampolineActivity CREATED +++")
         
         val manager = ScreenTimeoutManager(this)
         val notificationHelper = NotificationHelper(this)
