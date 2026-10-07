@@ -87,10 +87,15 @@ class ScreenTimeoutService : Service() {
         // 2. Acquire Wakelock (Screen Keeper)
         acquireWakelock()
 
-        // 3. Start Timer
+        // 3. Start Timer with Heartbeat
         currentTimerJob?.cancel()
         currentTimerJob = serviceScope.launch {
-            delay(timeoutMs)
+            var elapsed = 0L
+            while (elapsed < timeoutMs) {
+                delay(10000) // 10 seconds
+                elapsed += 10000
+                DebugLogger.log("Screen Keeper Heartbeat: Still running (${elapsed / 1000}s elapsed)")
+            }
             DebugLogger.log("Screen Keeper timer ($timeoutMins m) expired. Shutting down.")
             stopSelf()
         }
@@ -100,7 +105,7 @@ class ScreenTimeoutService : Service() {
         prefs.edit()
             .putBoolean("is_caffeine_active", true)
             .putLong("current_caffeine_ms", timeoutMs)
-            .apply()
+            .commit()
             
         ScreenTimeoutTileService.requestTileUpdate(this)
 
@@ -112,17 +117,18 @@ class ScreenTimeoutService : Service() {
             val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
             @Suppress("DEPRECATION")
             wakeLock = pm.newWakeLock(
-                PowerManager.SCREEN_DIM_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
                 "ScreenTimeoutTile::CaffeineWakelock"
             )
             wakeLock?.setReferenceCounted(false)
         }
         wakeLock?.acquire()
-        DebugLogger.log("Screen Keeper Wakelock acquired.")
+        DebugLogger.log("Screen Keeper FULL_WAKE_LOCK acquired.")
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        DebugLogger.log("Screen Keeper Service Destroyed by OS or User.")
         currentTimerJob?.cancel()
         serviceScope.cancel()
         

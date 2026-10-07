@@ -68,9 +68,11 @@ class ScreenTimeoutTileService : TileService() {
         val prefs = getSharedPreferences("screen_timeout_prefs", Context.MODE_PRIVATE)
         val isActive = prefs.getBoolean("is_caffeine_active", false)
         val currentMs = prefs.getLong("current_caffeine_ms", 300000L)
+        val mins = currentMs / 60000
+
+        DebugLogger.log("Updating Tile UI: isActive=$isActive, mins=$mins")
 
         if (isActive) {
-            val mins = currentMs / 60000
             tile.state = Tile.STATE_ACTIVE
             tile.label = "${mins}m (Temp)"
             tile.icon = Icon.createWithResource(this, R.drawable.ic_tile_timer)
