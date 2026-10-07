@@ -138,6 +138,31 @@ class ScreenTimeoutManager(private val context: Context) {
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }
+
+            // DIAGNOSTIC: Check if OS reverts it slowly after a few seconds
+            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                kotlinx.coroutines.delay(5000)
+                try {
+                    val delayedRead = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1)
+                    if (delayedRead != timeoutMs) {
+                        DebugLogger.log("CRITICAL DIAGNOSTIC: OS slowly reverted to $delayedRead after 5s!")
+                        android.widget.Toast.makeText(
+                            context,
+                            "Diagnostic: OS silently reverted to ${delayedRead/60000}m behind our back!",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        DebugLogger.log("DIAGNOSTIC: DB successfully held $timeoutMs for 5s. PowerManager ignored it.")
+                        android.widget.Toast.makeText(
+                            context,
+                            "Diagnostic: DB held 5m, but OS ignored it.",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    // Ignore
+                }
+            }
         } catch (e: Exception) {
             DebugLogger.log("EXCEPTION in setSystemTimeout: ${e.message}")
             e.printStackTrace()
