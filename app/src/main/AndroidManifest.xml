@@ -56,7 +56,6 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Preserve screen timeout mode and notification" />
         </service>
 
-        <receiver android:name=".RestoreTimeoutReceiver" android:exported="false" />
 
     </application>
 
