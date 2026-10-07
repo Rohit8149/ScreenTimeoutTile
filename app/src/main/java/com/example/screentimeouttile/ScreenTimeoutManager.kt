@@ -110,6 +110,12 @@ class ScreenTimeoutManager(private val context: Context) {
                 }
                 
                 context.contentResolver.notifyChange(uri, null)
+                try {
+                    context.contentResolver.notifyChange(Settings.System.getUriFor("last_manual_screen_off_timeout"), null)
+                    context.contentResolver.notifyChange(Settings.System.getUriFor("powersave_backup_screenoff_time"), null)
+                } catch (e: Exception) {
+                    // Ignore
+                }
                 
                 // Wait 100ms for OS to potentially overwrite
                 Thread.sleep(100) 
