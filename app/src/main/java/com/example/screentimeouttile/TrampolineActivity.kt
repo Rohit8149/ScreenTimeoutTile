@@ -59,12 +59,11 @@ class TrampolineActivity : Activity() {
 
         ScreenTimeoutTileService.requestTileUpdate(this)
         
-        // Delay finish by 6 seconds (longer than the 5s diagnostic) to see if ColorOS 
-        // respects the timeout when the app physically remains in the Foreground state.
+        // Delay finish so the OS Battery Monitor has time to register the app in the Foreground bucket
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             finish()
             @Suppress("DEPRECATION")
             overridePendingTransition(0, 0)
-        }, 6000)
+        }, 250)
     }
 }

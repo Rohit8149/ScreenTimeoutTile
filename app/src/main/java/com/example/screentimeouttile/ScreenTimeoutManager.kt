@@ -99,6 +99,16 @@ class ScreenTimeoutManager(private val context: Context) {
 
             for (attempt in 1..5) {
                 Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
+                
+                // BOOM! We found ColorOS's secret shadow databases in the logs.
+                // If we don't update these, the OS thinks a rogue app hijacked the timeout and reverts it.
+                try {
+                    Settings.System.putInt(context.contentResolver, "last_manual_screen_off_timeout", timeoutMs)
+                    Settings.System.putInt(context.contentResolver, "powersave_backup_screenoff_time", timeoutMs)
+                } catch (e: Exception) {
+                    // Ignore if permission denied
+                }
+                
                 context.contentResolver.notifyChange(uri, null)
                 
                 // Wait 100ms for OS to potentially overwrite
@@ -139,26 +149,6 @@ class ScreenTimeoutManager(private val context: Context) {
                     statusMsg,
                     android.widget.Toast.LENGTH_LONG
                 ).show()
-            }
-
-            // DIAGNOSTIC: Dump proprietary keys to find if ColorOS uses a shadow DB
-            try {
-                val cursor = context.contentResolver.query(Settings.System.CONTENT_URI, null, null, null, null)
-                cursor?.use {
-                    val nameIndex = it.getColumnIndex("name")
-                    val valueIndex = it.getColumnIndex("value")
-                    while (it.moveToNext()) {
-                        if (nameIndex != -1 && valueIndex != -1) {
-                            val name = it.getString(nameIndex)
-                            if (name.contains("timeout", ignoreCase = true) || name.contains("screen", ignoreCase = true)) {
-                                val value = it.getString(valueIndex)
-                                DebugLogger.log("DB Dump -> $name: $value")
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                DebugLogger.log("Failed to dump DB: ${e.message}")
             }
 
             // DIAGNOSTIC: Check if OS reverts it slowly after a few seconds
