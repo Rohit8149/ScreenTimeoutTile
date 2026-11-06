@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ScreenTimeoutTile</string>
+    <string name="accessibility_service_label">Screen Keeper Touch Reset</string>
+    <string name="accessibility_service_description">Enables Screen Keeper to detect screen touches and scrolls to automatically reset the timeout timer while reading or viewing content.</string>
 </resources>

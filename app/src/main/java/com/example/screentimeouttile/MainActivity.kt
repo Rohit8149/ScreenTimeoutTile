@@ -1,9 +1,11 @@
 package com.example.screentimeouttile
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -85,17 +87,28 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private fun isTouchResetEnabled(context: Context): Boolean {
+    if (ScreenInteractionAccessibilityService.isServiceRunning) return true
+    val enabledServices = Settings.Secure.getString(
+        context.contentResolver,
+        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+    ) ?: return false
+    return enabledServices.contains(context.packageName)
+}
+
 @Composable
 fun ScreenTimeoutScreen() {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val powerManager = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
     var isIgnoringBattery by remember { mutableStateOf(powerManager.isIgnoringBatteryOptimizations(context.packageName)) }
+    var isTouchResetActive by remember { mutableStateOf(isTouchResetEnabled(context)) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+                isTouchResetActive = isTouchResetEnabled(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -133,6 +146,54 @@ fun ScreenTimeoutScreen() {
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Touch Reset (Accessibility) Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isTouchResetActive) {
+                    MaterialTheme.colorScheme.secondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.tertiaryContainer
+                }
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (isTouchResetActive) "👆 Touch & Scroll Reset: Active" else "👆 Touch & Scroll Reset: Disabled",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isTouchResetActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (isTouchResetActive) {
+                        "Touching or scrolling the screen (such as reading a PDF) will automatically reset the timeout countdown, just like standard Android display timeout."
+                    } else {
+                        "Enable this service so that touching or scrolling the screen (e.g. while reading a PDF) automatically resets the countdown timer back to full."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = if (isTouchResetActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                if (!isTouchResetActive) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Text("Enable Touch Reset")
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Battery Optimization Card
         val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -186,7 +247,7 @@ fun ScreenTimeoutScreen() {
 
         // How to use section
         Text(
-            text = "How to Use",
+            text = "How It Works",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.fillMaxWidth()
@@ -198,7 +259,7 @@ fun ScreenTimeoutScreen() {
         StepCard(
             number = "1",
             title = "Add the Tile",
-            description = "Swipe down from the top of your screen to open Quick Settings. Tap the edit (pencil) icon, find \"Screen Keeper\" and drag it into your active tiles."
+            description = "Swipe down from the top of your screen to open Quick Settings. Tap the edit (pencil) icon, find \"Screen Timeout\" / \"Screen Keeper\" and drag it into your active tiles."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -206,8 +267,8 @@ fun ScreenTimeoutScreen() {
         // Step 2
         StepCard(
             number = "2",
-            title = "Tap to Cycle",
-            description = "Each tap on the tile cycles through temporary timeouts:\n\nOff → 5 min → 10 min → 30 min → Off\n\nThe app uses a Wakelock to physically prevent the screen from turning off."
+            title = "Tap to Cycle (Exact Real-Time Math)",
+            description = "Each tap cycles: Off → 5 min → 10 min → 30 min → Off.\n\nThe app calculates Target minus Native timeout so the total duration is mathematically exact, and your phone's native dimming reminder triggers before the screen turns off."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -215,8 +276,8 @@ fun ScreenTimeoutScreen() {
         // Step 3
         StepCard(
             number = "3",
-            title = "Zero Battery Drain",
-            description = "The exact millisecond you manually press your phone's Power Button to lock the screen, the Screen Keeper shuts down instantly to save 100% of your battery."
+            title = "Touch & Scroll Reset",
+            description = "Whenever you scroll a PDF or touch the screen, the timer resets back to full. If the screen has begun dimming, touching it instantly un-dims the screen back to full brightness."
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -224,8 +285,8 @@ fun ScreenTimeoutScreen() {
         // Step 4
         StepCard(
             number = "4",
-            title = "Notification",
-            description = "A notification appears while the Screen Keeper is running. You can tap the notification anytime to cancel it early."
+            title = "Zero Battery Drain",
+            description = "Pressing your phone's physical Power Button instantly destroys the Screen Keeper service to guarantee 0% background battery drain."
         )
 
         Spacer(modifier = Modifier.height(32.dp))
