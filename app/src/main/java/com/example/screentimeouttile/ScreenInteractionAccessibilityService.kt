@@ -11,12 +11,7 @@ class ScreenInteractionAccessibilityService : AccessibilityService() {
         when (event.eventType) {
             AccessibilityEvent.TYPE_VIEW_CLICKED,
             AccessibilityEvent.TYPE_VIEW_SCROLLED,
-            AccessibilityEvent.TYPE_VIEW_SELECTED,
-            AccessibilityEvent.TYPE_VIEW_FOCUSED,
-            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
-            AccessibilityEvent.TYPE_WINDOWS_CHANGED,
-            AccessibilityEvent.TYPE_TOUCH_INTERACTION_START,
-            AccessibilityEvent.TYPE_GESTURE_DETECTION_START -> {
+            AccessibilityEvent.TYPE_VIEW_SELECTED -> {
                 ScreenTimeoutService.notifyUserInteraction()
             }
         }

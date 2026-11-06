@@ -167,10 +167,7 @@ class ScreenTimeoutService : Service() {
 
     fun onUserInteraction() {
         val now = SystemClock.elapsedRealtime()
-        if (now - lastInteractionTime < 300L) {
-            lastInteractionTime = now
-            return
-        }
+        val elapsedSinceLast = now - lastInteractionTime
         lastInteractionTime = now
 
         // If wakelock was released (screen was dimming / in native phase) and user touched,
@@ -178,8 +175,10 @@ class ScreenTimeoutService : Service() {
         if (!isHoldingWakeLock) {
             acquireWakelock()
             DebugLogger.log("Touch detected! Re-acquired Wakelock, un-dimmed screen, reset timer to ${targetTimeoutMs / 60000}m.")
-        } else {
-            DebugLogger.log("Touch detected! Resetting Screen Keeper countdown (${targetTimeoutMs / 60000}m).")
+        } else if (elapsedSinceLast >= 5000L) {
+            // Only log if at least 5 seconds have passed since the previous logged touch,
+            // preventing log clutter when user is actively tapping or scrolling.
+            DebugLogger.log("User touch detected -> Reset countdown (${targetTimeoutMs / 60000}m).")
         }
     }
 
