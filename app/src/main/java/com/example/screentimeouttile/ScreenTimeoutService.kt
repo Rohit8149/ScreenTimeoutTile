@@ -168,21 +168,23 @@ class ScreenTimeoutService : Service() {
         }
     }
 
-    fun onUserInteraction() {
+    fun onUserInteraction(isScroll: Boolean) {
         val now = SystemClock.elapsedRealtime()
         val elapsedSinceLast = now - lastInteractionTime
         lastInteractionTime = now
         lastHeartbeatSec = 0L // Reset heartbeat counter back to 0s!
 
+        val action = if (isScroll) "scroll" else "touch/tap"
+
         // If wakelock was released (screen was dimming / in native phase) and user touched,
         // instantly re-acquire wakelock and bring brightness back up!
         if (!isHoldingWakeLock) {
             acquireWakelock()
-            DebugLogger.log("Touch detected! Re-acquired Wakelock, un-dimmed screen, reset timer to ${targetTimeoutMs / 60000}m.")
+            DebugLogger.log("User $action detected! Re-acquired Wakelock, un-dimmed screen, reset timer to ${targetTimeoutMs / 60000}m.")
         } else if (elapsedSinceLast >= 5000L) {
             // Only log if at least 5 seconds have passed since the previous logged touch,
             // preventing log clutter when user is actively tapping or scrolling.
-            DebugLogger.log("User touch detected -> Reset countdown (${targetTimeoutMs / 60000}m).")
+            DebugLogger.log("User $action detected -> Reset countdown (${targetTimeoutMs / 60000}m).")
         }
     }
 
@@ -245,8 +247,8 @@ class ScreenTimeoutService : Service() {
         @Volatile
         private var activeService: ScreenTimeoutService? = null
 
-        fun notifyUserInteraction() {
-            activeService?.onUserInteraction()
+        fun notifyUserInteraction(isScroll: Boolean = false) {
+            activeService?.onUserInteraction(isScroll)
         }
 
         fun getNativeTimeout(context: Context): Long {

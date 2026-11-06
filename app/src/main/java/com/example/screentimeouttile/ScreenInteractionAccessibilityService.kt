@@ -9,10 +9,14 @@ class ScreenInteractionAccessibilityService : AccessibilityService() {
         if (event == null) return
         
         when (event.eventType) {
+            AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
+                ScreenTimeoutService.notifyUserInteraction(isScroll = true)
+            }
             AccessibilityEvent.TYPE_VIEW_CLICKED,
-            AccessibilityEvent.TYPE_VIEW_SCROLLED,
-            AccessibilityEvent.TYPE_VIEW_SELECTED -> {
-                ScreenTimeoutService.notifyUserInteraction()
+            AccessibilityEvent.TYPE_VIEW_SELECTED,
+            AccessibilityEvent.TYPE_VIEW_FOCUSED,
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                ScreenTimeoutService.notifyUserInteraction(isScroll = false)
             }
         }
     }

@@ -10,6 +10,8 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -120,6 +122,12 @@ fun ScreenTimeoutScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                ScreenTimeoutService.notifyUserInteraction(isScroll = false)
+            }
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -329,11 +337,15 @@ fun ScreenTimeoutScreen() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(onClick = {
+                        ScreenTimeoutService.notifyUserInteraction(isScroll = false)
                         clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(logs.joinToString("\n")))
                         android.widget.Toast.makeText(context, "Logs copied!", android.widget.Toast.LENGTH_SHORT).show()
                     }) { Text("Copy Logs") }
 
-                    OutlinedButton(onClick = { DebugLogger.clearLogs() }) { Text("Clear") }
+                    OutlinedButton(onClick = {
+                        ScreenTimeoutService.notifyUserInteraction(isScroll = false)
+                        DebugLogger.clearLogs()
+                    }) { Text("Clear") }
                 }
             }
         }
