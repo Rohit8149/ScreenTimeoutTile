@@ -28,6 +28,9 @@ class ScreenTimeoutService : Service() {
     @Volatile
     private var lastInteractionTime = 0L
 
+    @Volatile
+    private var lastHeartbeatSec = 0L
+
     private var targetTimeoutMs = 300000L
     private var nativeTimeoutMs = 60000L
     private var wakelockDurationMs = 240000L
@@ -109,6 +112,7 @@ class ScreenTimeoutService : Service() {
         // 4. Acquire Wakelock & Start Interaction Timer
         acquireWakelock()
         lastInteractionTime = SystemClock.elapsedRealtime()
+        lastHeartbeatSec = 0L
 
         startCountdownTimer(targetMins, nativeSecs)
 
@@ -127,7 +131,6 @@ class ScreenTimeoutService : Service() {
     private fun startCountdownTimer(targetMins: Long, nativeSecs: Long) {
         currentTimerJob?.cancel()
         currentTimerJob = serviceScope.launch {
-            var lastHeartbeatSec = 0L
             while (isActive) {
                 val elapsedSinceTouch = SystemClock.elapsedRealtime() - lastInteractionTime
                 val remainingWakelock = wakelockDurationMs - elapsedSinceTouch
@@ -153,11 +156,11 @@ class ScreenTimeoutService : Service() {
                     }
                 }
 
-                // Heartbeat log every 30 seconds
+                // Heartbeat log every 10 seconds (resets when touch occurs)
                 val elapsedSec = elapsedSinceTouch / 1000
-                if (elapsedSec >= lastHeartbeatSec + 30) {
-                    lastHeartbeatSec = elapsedSec
-                    DebugLogger.log("Screen Keeper Heartbeat: ${elapsedSec}s elapsed since last touch (Target=${targetMins}m)")
+                if (elapsedSec >= lastHeartbeatSec + 10) {
+                    lastHeartbeatSec = (elapsedSec / 10) * 10
+                    DebugLogger.log("Screen Keeper Heartbeat: Still running (${lastHeartbeatSec}s elapsed)")
                 }
 
                 delay(1000)
@@ -169,6 +172,7 @@ class ScreenTimeoutService : Service() {
         val now = SystemClock.elapsedRealtime()
         val elapsedSinceLast = now - lastInteractionTime
         lastInteractionTime = now
+        lastHeartbeatSec = 0L // Reset heartbeat counter back to 0s!
 
         // If wakelock was released (screen was dimming / in native phase) and user touched,
         // instantly re-acquire wakelock and bring brightness back up!
